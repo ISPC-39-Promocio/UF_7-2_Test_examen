@@ -183,18 +183,9 @@ h2{
 }
 
 
-/* Navegació mòbil millorada */
+/* Navegació mòbil v2 */
 .mobile-menu-btn{
   display:none;
-  position:sticky;
-  top:8px;
-  z-index:80;
-  width:100%;
-  margin:0 0 12px;
-  border-radius:16px;
-  background:var(--primary);
-  color:#fff;
-  box-shadow:0 8px 22px rgba(37,99,235,.25);
 }
 .drawer-overlay{
   display:none;
@@ -204,7 +195,16 @@ body.menu-open{
 }
 @media(max-width:900px){
   .mobile-menu-btn{
-    display:block;
+    display:block !important;
+    position:sticky;
+    top:8px;
+    z-index:100;
+    width:100%;
+    margin:0 0 12px;
+    border-radius:16px;
+    background:var(--primary);
+    color:#fff;
+    box-shadow:0 8px 22px rgba(37,99,235,.25);
   }
   .layout{
     display:block !important;
@@ -213,21 +213,21 @@ body.menu-open{
     position:fixed !important;
     top:0 !important;
     left:0 !important;
-    height:100vh !important;
-    width:min(86vw,340px) !important;
+    height:100dvh !important;
+    width:min(88vw,350px) !important;
     max-height:none !important;
     overflow:auto !important;
     z-index:120 !important;
-    transform:translateX(-110%);
-    transition:transform .22s ease;
+    transform:translateX(-110%) !important;
+    transition:transform .22s ease !important;
     border-radius:0 22px 22px 0 !important;
     box-shadow:0 20px 50px rgba(15,23,42,.28) !important;
   }
   body.menu-open .sidebar{
-    transform:translateX(0);
+    transform:translateX(0) !important;
   }
   .drawer-overlay{
-    display:block;
+    display:block !important;
     position:fixed;
     inset:0;
     background:rgba(15,23,42,.42);
@@ -242,6 +242,7 @@ body.menu-open{
   }
   .main{
     width:100%;
+    scroll-margin-top:70px;
   }
   .modbtn{
     min-height:54px;
@@ -255,10 +256,10 @@ body.menu-open{
 <header>
   <span class="tag">UF 7.2 · Format Moodle sense escriure + retroacció professora</span>
   <h1>Qüestionaris reals i generats + guia compacta · retroacció</h1>
-  <p>Cada apartat té el test real de l’ISPC en xarxa i un test generat. No has d’escriure cap resposta: tot funciona amb opcions per marcar o desplegables, com al Moodle. En mòbil, fes servir el botó “☰ Apartats” i, en seleccionar un bloc, la pàgina baixa directament al contingut. Versió revisada de forma exhaustiva: s’han comprovat les respostes correctes contra les correccions que apareixen als PDFs i contra els criteris de la UF.</p>
+  <p>Cada apartat té el test real de l’ISPC en xarxa i un test generat. No has d’escriure cap resposta: tot funciona amb opcions per marcar o desplegables, com al Moodle. En mòbil, fes servir el botó “☰ Apartats”. En seleccionar un bloc, el menú es tanca i la pàgina baixa directament al contingut. Versió revisada de forma exhaustiva: s’han comprovat les respostes correctes contra les correccions que apareixen als PDFs i contra els criteris de la UF.</p>
 </header>
 
-<button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Obrir menú d'apartats">☰ Apartats</button>
+<button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Obrir menú d'apartats">☰ Apartats</button>
 <div class="drawer-overlay" id="drawerOverlay"></div>
 
 <div class="layout">
@@ -405,7 +406,7 @@ function detectionHint(q){
 }
 
 function isMobile(){
-  return window.matchMedia("(max-width: 900px)").matches;
+  return window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
 }
 function openDrawer(){
   document.body.classList.add("menu-open");
@@ -416,13 +417,15 @@ function closeDrawer(){
 function jumpToContent(){
   const main = document.querySelector(".main");
   if(main){
-    setTimeout(() => main.scrollIntoView({behavior:"smooth", block:"start"}), 80);
+    setTimeout(() => {
+      main.scrollIntoView({behavior:"smooth", block:"start"});
+    }, 80);
   }
 }
 
 function renderModules(){
  const list=document.getElementById("moduleList");list.innerHTML="";
- modules.forEach((m,i)=>{const b=document.createElement("button");b.className="modbtn"+(i===activeModule?" active":"");b.innerHTML=`<span class="modtitle">${m.title}</span><span class="modsub">${m.subtitle}</span>`;b.onclick=()=>{activeModule=i;activeTest=0;renderAll()};list.appendChild(b)});
+ modules.forEach((m,i)=>{const b=document.createElement("button");b.className="modbtn"+(i===activeModule?" active":"");b.innerHTML=`<span class="modtitle">${m.title}</span><span class="modsub">${m.subtitle}</span>`;b.onclick=()=>{activeModule=i;activeTest=0;renderAll();closeDrawer();if(isMobile())jumpToContent();};list.appendChild(b)});
 }
 function renderHeader(){
  const m=modules[activeModule];
@@ -502,6 +505,25 @@ function renderReview(){
  rev.style.display="block";rev.scrollIntoView({behavior:"smooth"});
 }
 function renderAll(){renderModules();renderHeader();if(!states[key()])initState();renderQuiz()}
+
+const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+const drawerOverlay = document.getElementById("drawerOverlay");
+
+if(mobileMenuBtn){
+  mobileMenuBtn.addEventListener("click", function(e){
+    e.preventDefault();
+    openDrawer();
+  });
+}
+if(drawerOverlay){
+  drawerOverlay.addEventListener("click", function(){
+    closeDrawer();
+  });
+}
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape") closeDrawer();
+});
+
 renderAll();
 </script>
 </body>
