@@ -182,6 +182,72 @@ h2{
   header{padding:16px !important;}
 }
 
+
+/* Navegació mòbil millorada */
+.mobile-menu-btn{
+  display:none;
+  position:sticky;
+  top:8px;
+  z-index:80;
+  width:100%;
+  margin:0 0 12px;
+  border-radius:16px;
+  background:var(--primary);
+  color:#fff;
+  box-shadow:0 8px 22px rgba(37,99,235,.25);
+}
+.drawer-overlay{
+  display:none;
+}
+body.menu-open{
+  overflow:hidden;
+}
+@media(max-width:900px){
+  .mobile-menu-btn{
+    display:block;
+  }
+  .layout{
+    display:block !important;
+  }
+  .sidebar{
+    position:fixed !important;
+    top:0 !important;
+    left:0 !important;
+    height:100vh !important;
+    width:min(86vw,340px) !important;
+    max-height:none !important;
+    overflow:auto !important;
+    z-index:120 !important;
+    transform:translateX(-110%);
+    transition:transform .22s ease;
+    border-radius:0 22px 22px 0 !important;
+    box-shadow:0 20px 50px rgba(15,23,42,.28) !important;
+  }
+  body.menu-open .sidebar{
+    transform:translateX(0);
+  }
+  .drawer-overlay{
+    display:block;
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.42);
+    z-index:110;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  body.menu-open .drawer-overlay{
+    opacity:1;
+    pointer-events:auto;
+  }
+  .main{
+    width:100%;
+  }
+  .modbtn{
+    min-height:54px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -189,8 +255,12 @@ h2{
 <header>
   <span class="tag">UF 7.2 · Format Moodle sense escriure + retroacció professora</span>
   <h1>Qüestionaris reals i generats + guia compacta · retroacció</h1>
-  <p>Cada apartat té el test real de l’ISPC en xarxa i un test generat. No has d’escriure cap resposta: tot funciona amb opcions per marcar o desplegables, com al Moodle. Versió revisada de forma exhaustiva: s’han comprovat les respostes correctes contra les correccions que apareixen als PDFs i contra els criteris de la UF.</p>
+  <p>Cada apartat té el test real de l’ISPC en xarxa i un test generat. No has d’escriure cap resposta: tot funciona amb opcions per marcar o desplegables, com al Moodle. En mòbil, fes servir el botó “☰ Apartats” i, en seleccionar un bloc, la pàgina baixa directament al contingut. Versió revisada de forma exhaustiva: s’han comprovat les respostes correctes contra les correccions que apareixen als PDFs i contra els criteris de la UF.</p>
 </header>
+
+<button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Obrir menú d'apartats">☰ Apartats</button>
+<div class="drawer-overlay" id="drawerOverlay"></div>
+
 <div class="layout">
   <aside class="sidebar">
     <h2>Apartats</h2>
@@ -333,6 +403,23 @@ function detectionHint(q){
  if(text.includes("gerundi"))return "Si és acció posterior o conseqüència, el gerundi és incorrecte.";
  return "Aplica el truc del bloc i descarta l’opció més artificial.";
 }
+
+function isMobile(){
+  return window.matchMedia("(max-width: 900px)").matches;
+}
+function openDrawer(){
+  document.body.classList.add("menu-open");
+}
+function closeDrawer(){
+  document.body.classList.remove("menu-open");
+}
+function jumpToContent(){
+  const main = document.querySelector(".main");
+  if(main){
+    setTimeout(() => main.scrollIntoView({behavior:"smooth", block:"start"}), 80);
+  }
+}
+
 function renderModules(){
  const list=document.getElementById("moduleList");list.innerHTML="";
  modules.forEach((m,i)=>{const b=document.createElement("button");b.className="modbtn"+(i===activeModule?" active":"");b.innerHTML=`<span class="modtitle">${m.title}</span><span class="modsub">${m.subtitle}</span>`;b.onclick=()=>{activeModule=i;activeTest=0;renderAll()};list.appendChild(b)});
